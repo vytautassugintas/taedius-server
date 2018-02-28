@@ -2,7 +2,9 @@ import express from 'express';
 import  mongoose from 'mongoose';
 const app = express();
 
-mongoose.connect('mongodb://localhost/test');
+const MONGO_URL = 'mongodb://localhost/test';
+
+mongoose.connect(MONGO_URL);
 
 const db = mongoose.connection;
 
