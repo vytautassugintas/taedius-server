@@ -20,6 +20,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@types/request": "^2.47.0",
     "bcrypt-nodejs": "0.0.3",
     "body-parser": "^1.18.2",
     "connect-mongo": "^2.0.1",
@@ -29,7 +30,8 @@
     "express-validator": "^5.0.2",
     "mongoose": "^5.0.7",
     "passport": "^0.4.0",
-    "passport-local": "^1.0.0"
+    "passport-local": "^1.0.0",
+    "request": "^2.83.0"
   },
   "devDependencies": {
     "@types/bcrypt-nodejs": "0.0.30",

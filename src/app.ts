@@ -1,20 +1,22 @@
 import express from "express";
+import { Request, Response, NextFunction } from "express";
 import session from "express-session";
 import expressValidator from "express-validator";
 import mongo from "connect-mongo";
 import mongoose from "mongoose";
 import bodyParser from "body-parser";
-
 import passport from "passport";
-import * as passportConfig from "./config/passport";
+import passportLocal from "passport-local";
+import request from "request";
 
+import { default as User } from "./models/User";
 import * as authController from "./controllers/auth";
 
-const MongoStore = mongo(session);
-
-const app = express();
-
 const MONGO_URL = "mongodb://localhost/test";
+
+const LocalStrategy = passportLocal.Strategy;
+const MongoStore = mongo(session);
+const app = express();
 
 mongoose.connect(MONGO_URL);
 
@@ -35,25 +37,36 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.use((req, res, next) => {
-  // After successful login, redirect back to the intended page
-  if (
-    !req.user &&
-    req.path !== "/login" &&
-    req.path !== "/signup" &&
-    !req.path.match(/^\/auth/) &&
-    !req.path.match(/\./)
-  ) {
-    req.session.returnTo = req.path;
-  } else if (req.user && req.path == "/account") {
-    req.session.returnTo = req.path;
-  }
-  next();
+passport.serializeUser<any, any>((user, done) => {
+  done(undefined, user.id);
 });
 
-app.get("/", (req: any, res: any) => res.send("Hello world!"));
+passport.deserializeUser((id, done) => {
+  User.findById(id, (err, user) => {
+    done(err, user);
+  });
+});
 
+passport.use(
+  new LocalStrategy({ usernameField: "email" }, (email, password, done) => {
+    User.findOne({ email: email.toLowerCase() }, (err, user: any) => {
+      if (err) return done(err);
+      if (!user) return done(undefined, false, { message: `Email ${email} not found.` });
+
+      user.comparePassword(password, (err: Error, isMatch: boolean) => {
+        if (err) return done(err);
+        if (isMatch) return done(undefined, user);
+        return done(undefined, false, {
+          message: "Invalid email or password."
+        });
+      });
+    });
+  })
+);
+
+app.get("/", (req: any, res: any) => res.send("Hello world!"));
 app.post("/signup", authController.signup);
+app.post("/login", authController.login);
 
 app.listen(3000, () => console.log("Example app listening on port 3000!"));
 
