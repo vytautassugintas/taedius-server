@@ -41,11 +41,23 @@ export function login(req: Request, res: Response, next: NextFunction): Response
 
   passport.authenticate("local", (err: Error, user: UserModel, info: IVerifyOptions) => {
     if (err) { return next(err); }
-    if (!user) return res.json({ msg: "User not" });
+    if (!user) return res.json({ msg: "User doesn't exist" });
 
     req.logIn(user, (err) => {
       if (err) return next(err);
       return res.json({ msg: "Success! You are logged in." });
     });
   })(req, res, next);
+}
+
+export let logout = (req: Request, res: Response) => {
+  req.logout();
+  res.json({mgs: "Logged out"});
+};
+
+export function getCurrentUser(req: Request, res: Response, next: NextFunction): Response {
+  return res.json({
+      id: req.user._id,
+      email: req.user.email
+  });
 }

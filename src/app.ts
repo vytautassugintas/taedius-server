@@ -64,9 +64,18 @@ passport.use(
   })
 );
 
+export let isAuthenticated = (req: Request, res: Response, next: NextFunction) => {
+    if (req.isAuthenticated()) {
+      return next();
+    }
+    res.json({errors: [{msg: "unauthorized"}]});
+};
+
 app.get("/", (req: any, res: any) => res.send("Hello world!"));
 app.post("/signup", authController.signup);
 app.post("/login", authController.login);
+app.get("/logout", authController.logout);
+app.get("/account", isAuthenticated, authController.getCurrentUser);
 
 app.listen(3000, () => console.log("Example app listening on port 3000!"));
 
