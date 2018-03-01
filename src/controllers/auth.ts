@@ -19,12 +19,7 @@ export let signup = (req: Request, res: Response, next: NextFunction) => {
 
       user.save((err) => {
         if (err) { return next(err); }
-        req.logIn(user, (err) => {
-          if (err) {
-            return next(err);
-          }
           return res.json({message: 'success'});
-        });
       });
     });
   };
