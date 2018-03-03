@@ -54,10 +54,3 @@ export let logout = (req: Request, res: Response) => {
   req.logout();
   res.json({mgs: "Logged out"});
 };
-
-export function getCurrentUser(req: Request, res: Response, next: NextFunction): Response {
-  return res.json({
-      id: req.user._id,
-      email: req.user.email
-  });
-}

@@ -11,6 +11,7 @@ import request from "request";
 
 import { default as User } from "./models/User";
 import * as authController from "./controllers/auth";
+import * as userController from "./controllers/user";
 
 const MONGO_URL = "mongodb://localhost/test";
 
@@ -75,7 +76,8 @@ app.get("/", (req: any, res: any) => res.send("Hello world!"));
 app.post("/signup", authController.signup);
 app.post("/login", authController.login);
 app.get("/logout", authController.logout);
-app.get("/account", isAuthenticated, authController.getCurrentUser);
+app.get("/account", isAuthenticated, userController.getCurrentUser);
+app.post("/account/update", isAuthenticated, userController.updateProfile);
 
 app.listen(3000, () => console.log("Example app listening on port 3000!"));
 
