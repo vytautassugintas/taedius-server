@@ -6,7 +6,7 @@ import crypto from "crypto";
 export type UserModel = mongoose.Document & {
   email: string;
   password: string;
-  groups: [GroupModel];
+  groups: GroupModel[];
 
   profile: {
     name: string;
@@ -16,7 +16,7 @@ export type UserModel = mongoose.Document & {
 const userSchema = new mongoose.Schema(
   {
     email: { type: String, unique: true },
-    password: String,
+    password: { type: String, select: false },
     groups: [{ type: mongoose.Schema.Types.ObjectId, ref: "Group" }],
 
     profile: {

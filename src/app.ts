@@ -12,6 +12,7 @@ import request from "request";
 import { default as User } from "./models/User";
 import * as authController from "./controllers/auth";
 import * as userController from "./controllers/user";
+import * as groupController from "./controllers/group";
 
 const MONGO_URL = "mongodb://localhost/test";
 
@@ -80,6 +81,11 @@ app.post("/account/update", isAuthenticated, userController.updateProfile);
 app.post("/account/group", isAuthenticated, userController.createGroup);
 app.post("/account/group/invite", isAuthenticated, userController.inviteToGroup);
 app.get("/account/group", isAuthenticated, userController.getGroups);
+app.post("/group/task/add", isAuthenticated, groupController.addTask);
+app.post("/group/task/remove", isAuthenticated, groupController.removeTask);
+app.post("/group/task/assign", isAuthenticated, groupController.assign);
+app.get("/group/:groupId/tasks", isAuthenticated, groupController.getTasks);
+
 
 app.listen(3000, () => console.log("Example app listening on port 3000!"));
 
