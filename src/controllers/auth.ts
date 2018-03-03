@@ -41,7 +41,7 @@ export function login(req: Request, res: Response, next: NextFunction): Response
 
   passport.authenticate("local", (err: Error, user: UserModel, info: IVerifyOptions) => {
     if (err) { return next(err); }
-    if (!user) return res.json({ msg: "User doesn't exist" });
+    if (!user) return res.json({errors: [{ msg: "User doesn't exist" }]});
 
     req.logIn(user, (err) => {
       if (err) return next(err);

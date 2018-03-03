@@ -1,3 +1,4 @@
+import { GroupModel } from "./Group";
 import mongoose from "mongoose";
 import bcrypt from "bcrypt-nodejs";
 import crypto from "crypto";
@@ -5,6 +6,7 @@ import crypto from "crypto";
 export type UserModel = mongoose.Document & {
   email: string;
   password: string;
+  groups: [GroupModel];
 
   profile: {
     name: string;
@@ -15,9 +17,10 @@ const userSchema = new mongoose.Schema(
   {
     email: { type: String, unique: true },
     password: String,
+    groups: [{ type: mongoose.Schema.Types.ObjectId, ref: "Group" }],
 
     profile: {
-      name: String
+      name: String,
     }
   },
   { timestamps: true }
@@ -56,4 +59,5 @@ userSchema.methods.comparePassword = function(
 };
 
 const User = mongoose.model("User", userSchema);
+
 export default User;

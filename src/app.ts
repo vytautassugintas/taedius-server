@@ -22,8 +22,7 @@ const app = express();
 mongoose.connect(MONGO_URL);
 
 app.use(expressValidator());
-app.use(
-  session({
+app.use(session({
     resave: true,
     saveUninitialized: true,
     secret: "secret",
@@ -76,8 +75,11 @@ app.get("/", (req: any, res: any) => res.send("Hello world!"));
 app.post("/signup", authController.signup);
 app.post("/login", authController.login);
 app.get("/logout", authController.logout);
-app.get("/account", isAuthenticated, userController.getCurrentUser);
+app.get("/account", isAuthenticated, userController.getProfile);
 app.post("/account/update", isAuthenticated, userController.updateProfile);
+app.post("/account/group", isAuthenticated, userController.createGroup);
+app.post("/account/group/invite", isAuthenticated, userController.inviteToGroup);
+app.get("/account/group", isAuthenticated, userController.getGroups);
 
 app.listen(3000, () => console.log("Example app listening on port 3000!"));
 
