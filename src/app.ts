@@ -34,7 +34,7 @@ app.use(session({
     })
   })
 );
-app.use(cors());
+app.use(cors({credentials: true, origin: true}));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(passport.initialize());
@@ -71,7 +71,7 @@ export let isAuthenticated = (req: Request, res: Response, next: NextFunction) =
     if (req.isAuthenticated()) {
       return next();
     }
-    res.json({errors: [{msg: "unauthorized"}]});
+    res.status(401).json({errors: [{msg: "unauthorized"}]});
 };
 
 app.get("/", (req: any, res: any) => res.send("Hello world!"));
