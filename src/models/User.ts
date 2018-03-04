@@ -16,7 +16,7 @@ export type UserModel = mongoose.Document & {
 const userSchema = new mongoose.Schema(
   {
     email: { type: String, unique: true },
-    password: { type: String, select: false },
+    password: String,
     groups: [{ type: mongoose.Schema.Types.ObjectId, ref: "Group" }],
 
     profile: {

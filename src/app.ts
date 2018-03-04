@@ -2,6 +2,7 @@ import express from "express";
 import { Request, Response, NextFunction } from "express";
 import session from "express-session";
 import expressValidator from "express-validator";
+import cors from "cors";
 import mongo from "connect-mongo";
 import mongoose from "mongoose";
 import bodyParser from "body-parser";
@@ -33,6 +34,7 @@ app.use(session({
     })
   })
 );
+app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(passport.initialize());

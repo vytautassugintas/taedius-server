@@ -37,11 +37,11 @@ export function login(req: Request, res: Response, next: NextFunction): Response
 
   const errors = req.validationErrors();
 
-  if (errors) return res.json({errors: errors});
+  if (errors) return res.status(400).json({errors: errors});
 
   passport.authenticate("local", (err: Error, user: UserModel, info: IVerifyOptions) => {
     if (err) { return next(err); }
-    if (!user) return res.json({errors: [{ msg: "User doesn't exist" }]});
+    if (!user) return res.status(400).json({errors: [{ msg: "User doesn't exist" }]});
 
     req.logIn(user, (err) => {
       if (err) return next(err);
