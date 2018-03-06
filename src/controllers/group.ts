@@ -64,6 +64,12 @@ export function removeTask(req: Request, res: Response, next: NextFunction) {
   });
 }
 
+export function getGroup(req: Request, res: Response, next: NextFunction) {
+  Group.findById(req.params.groupId, (err, group: GroupModel) => {
+    return res.json(group);
+  });
+}
+
 export function assign(req: Request, res: Response, next: NextFunction) {
   req.assert("taskId", "Task id cannot be blank").notEmpty();
   req.assert("assigneeId", "Assignee id cannot be blank").notEmpty();
