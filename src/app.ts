@@ -83,6 +83,7 @@ app.post("/account/update", isAuthenticated, userController.updateProfile);
 app.post("/account/group", isAuthenticated, userController.createGroup);
 app.post("/account/group/invite", isAuthenticated, userController.inviteToGroup);
 app.get("/account/group", isAuthenticated, userController.getGroups);
+app.delete("/group/:groupId", isAuthenticated, groupController.removeGroup);
 app.post("/group/task/add", isAuthenticated, groupController.addTask);
 app.post("/group/task/remove", isAuthenticated, groupController.removeTask);
 app.post("/group/task/assign", isAuthenticated, groupController.assign);

@@ -4,6 +4,13 @@ import { default as User, UserModel } from "../models/User";
 import { default as Group, GroupModel } from "../models/Group";
 import { default as Task, TaskModel } from "../models/Task";
 
+export function removeGroup(req: Request, res: Response, next: NextFunction) {
+  Group.findByIdAndRemove(req.params.groupId, err => {
+    if (err) next(err);
+    res.json({msg: "success"});
+  });
+}
+
 export function getTasks(req: Request, res: Response, next: NextFunction) {
   Group.findById(req.params.groupId)
     .populate({
