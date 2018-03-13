@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { WriteError } from "mongodb";
 import { default as User, UserModel } from "../models/User";
 import { default as Group, GroupModel } from "../models/Group";
+import { default as Notification, NotificationModel, NotificationType } from "../models/Notification";
 
 export function updateProfile(req: Request, res: Response, next: NextFunction) {
   User.findById(req.user.id, (err, user: UserModel) => {
@@ -85,9 +86,19 @@ export function inviteToGroup(req: Request, res: Response, next: NextFunction) {
         user.groups.push(group._id);
         user.save(err => {
           if (err) return next(err);
+          createNotification(NotificationType.GroupInvite, user._id);
           return res.json({ msg: "success" });
         });
       });
     });
   });
+}
+
+function createNotification(type: NotificationType, userId: string): void {
+  const notification = new Notification({
+    type: type,
+    receiver: userId,
+    isSeen: false
+  });
+  notification.save();
 }
