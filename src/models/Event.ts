@@ -12,6 +12,7 @@ export enum EventType {
 
 export type EventModel = mongoose.Document & {
   type: EventType;
+  associatedId: string;
   receiver: UserModel;
   sender?: UserModel;
   actionLink: string;
@@ -21,6 +22,7 @@ export type EventModel = mongoose.Document & {
 const eventSchema = new mongoose.Schema(
   {
     type: String,
+    associatedId: String,
     receiver: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     sender: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     actionLink: String,

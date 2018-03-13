@@ -81,10 +81,11 @@ export function inviteToGroup(req: Request, res: Response, next: NextFunction) {
       if (userAlreadyExists.length)
         return res.json({errors: [{ msg: "user already in group" }]});
 
-      Event.findOne({receiver: user._id}, (err, evnt) => {
+      Event.findOne({receiver: user._id, associatedId: req.body.groupId}, (err, evnt) => {
         if (evnt) return res.json({errors: [{ msg: "user already in invited" }]});
         const event = new Event({
           type: EventType.GroupInvite,
+          associatedId: req.body.groupId,
           receiver: user._id,
           sender: req.user._id,
           possibleActions: [ActionType.Accept, ActionType.Decline]
@@ -110,7 +111,7 @@ export function inviteToGroup(req: Request, res: Response, next: NextFunction) {
 }
 
 export function createGroupInviteLink(groupId: string, eventId: string) {
-  return "/account/" + groupId + "/" + eventId + "/accept";
+  return "/account/" + groupId + "/" + eventId;
 }
 
 export function acceptGroupInvite(req: Request, res: Response, next: NextFunction) {
@@ -138,5 +139,19 @@ export function acceptGroupInvite(req: Request, res: Response, next: NextFunctio
         });
       });
     });
+  });
+}
+
+export function getNotifications(req: Request, res: Response, next: NextFunction) {
+  Notification.find({receiver: req.user._id}, (err, notifications) => {
+    if (err) return next(err);
+    return res.json(notifications);
+  });
+}
+
+export function getEvents(req: Request, res: Response, next: NextFunction) {
+  Event.find({receiver: req.user._id}, (err, event) => {
+    if (err) return next(err);
+    return res.json(event);
   });
 }
