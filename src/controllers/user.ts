@@ -3,6 +3,7 @@ import { WriteError } from "mongodb";
 import { default as User, UserModel } from "../models/User";
 import { default as Group, GroupModel } from "../models/Group";
 import { default as Notification, NotificationModel, NotificationType } from "../models/Notification";
+import { default as Event, EventModel, EventType, ActionType } from "../models/Event";
 
 export function updateProfile(req: Request, res: Response, next: NextFunction) {
   User.findById(req.user.id, (err, user: UserModel) => {
@@ -80,25 +81,62 @@ export function inviteToGroup(req: Request, res: Response, next: NextFunction) {
       if (userAlreadyExists.length)
         return res.json({errors: [{ msg: "user already in group" }]});
 
-      group.users.push(user._id);
-      group.save(err => {
-        if (err) return next(err);
-        user.groups.push(group._id);
-        user.save(err => {
-          if (err) return next(err);
-          createNotification(NotificationType.GroupInvite, user._id);
-          return res.json({ msg: "success" });
+      Event.findOne({receiver: user._id}, (err, evnt) => {
+        if (evnt) return res.json({errors: [{ msg: "user already in invited" }]});
+        const event = new Event({
+          type: EventType.GroupInvite,
+          receiver: user._id,
+          sender: req.user._id,
+          possibleActions: [ActionType.Accept, ActionType.Decline]
+        });
+
+        event.save((err, savedEvent: EventModel) => {
+          savedEvent.actionLink = createGroupInviteLink(group._id, savedEvent._id);
+          savedEvent.save(err => {
+            if (err) return next(err);
+            const notif = new Notification({
+              type: NotificationType.GroupInvite,
+              receiver: user._id,
+              isSeen: false
+            });
+            notif.save(err => {
+              return res.json({ msg: "success" });
+            });
+          });
         });
       });
     });
   });
 }
 
-function createNotification(type: NotificationType, userId: string): void {
-  const notification = new Notification({
-    type: type,
-    receiver: userId,
-    isSeen: false
+export function createGroupInviteLink(groupId: string, eventId: string) {
+  return "/account/" + groupId + "/" + eventId + "/accept";
+}
+
+export function acceptGroupInvite(req: Request, res: Response, next: NextFunction) {
+  Event.findById(req.params.eventId, (err, event: EventModel) => {
+    if (!event)
+      return res.json({errors: [{ msg: "you shouldn't be here" }]});
+
+    if (!event.receiver.equals(req.user._id))
+      return res.json({errors: [{ msg: "you shouldn't be here" }]});
+
+    Group.findById(req.params.groupId, (err, group: GroupModel) => {
+      if (err) return next(err);
+
+      group.users.push(req.user._id);
+      group.save(err => {
+        if (err) return next(err);
+        User.findById(req.user._id, (err, userToUpdate: UserModel) => {
+          userToUpdate.groups.push(group._id);
+          userToUpdate.save(err => {
+            if (err) return next(err);
+            // TODO: create notif
+            // TODO: delte event
+            return res.json({ msg: "success" });
+          });
+        });
+      });
+    });
   });
-  notification.save();
 }

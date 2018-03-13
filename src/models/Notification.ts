@@ -9,13 +9,15 @@ export type NotificationModel = mongoose.Document & {
   type: NotificationType;
   receiver: UserModel;
   isSeen: boolean;
+  actionId: string
 };
 
 const notificationSchema = new mongoose.Schema(
   {
     type: String,
+    isSeen: Boolean,
     receiver: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-    isSeen: Boolean
+    actionId: { type: mongoose.Schema.Types.ObjectId, ref: "Action" }
   },
   { timestamps: true }
 );
