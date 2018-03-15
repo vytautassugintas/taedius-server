@@ -14,6 +14,7 @@ import { default as User } from "./models/User";
 import * as authController from "./controllers/auth";
 import * as userController from "./controllers/user";
 import * as groupController from "./controllers/group";
+import * as eventController from "./controllers/event";
 
 const MONGO_URL = "mongodb://localhost/test";
 
@@ -85,7 +86,7 @@ app.post("/account/group/invite", isAuthenticated, userController.inviteToGroup)
 app.post("/account/:groupId/:eventId/accept", isAuthenticated, userController.acceptGroupInvite);
 app.get("/account/group", isAuthenticated, userController.getGroups);
 app.get("/account/notifications", isAuthenticated, userController.getNotifications);
-app.get("/account/events", isAuthenticated, userController.getEvents);
+app.get("/account/events", isAuthenticated, eventController.getCurrentUserEvents);
 app.delete("/group/:groupId", isAuthenticated, groupController.removeGroup);
 app.post("/group/task/add", isAuthenticated, groupController.addTask);
 app.post("/group/task/remove", isAuthenticated, groupController.removeTask);

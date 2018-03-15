@@ -148,10 +148,3 @@ export function getNotifications(req: Request, res: Response, next: NextFunction
     return res.json(notifications);
   });
 }
-
-export function getEvents(req: Request, res: Response, next: NextFunction) {
-  Event.find({receiver: req.user._id}, (err, event) => {
-    if (err) return next(err);
-    return res.json(event);
-  });
-}
