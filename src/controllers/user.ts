@@ -58,56 +58,55 @@ export function getGroups(req: Request, res: Response, next: NextFunction) {
     });
 }
 
-export function inviteToGroup(req: Request, res: Response, next: NextFunction) {
+export async function inviteToGroup(req: Request, res: Response, next: NextFunction) {
   req.assert("email", "Email is not valid").isEmail();
   req.assert("email", "Email cannot be blank").notEmpty();
   req.assert("groupId", "Group id cannot be blank").notEmpty();
 
   const errors = req.validationErrors();
-  if (errors) return res.json({errors: errors});
 
-  User.findOne({ email: req.body.email }, (err, user: UserModel) => {
-    if (err) return next(err);
-    if (!user) return res.json({errors: [{ msg: "user doesn't exists" }]});
+  if (errors) {
+    return res.status(400).json({errors: errors});
+  }
 
-    Group.findById(req.body.groupId, (err, group: GroupModel) => {
-      if (err) return next(err);
+  const user = await User.findOne({ email: req.body.email });
 
-      const notGroupOwner = !req.user._id.equals(group.createdBy);
-      if (notGroupOwner)
-        return res.json({errors: [{ msg: "can't add, you are not the owner of this group" }]});
+  if (!user) {
+    return res.status(400).json({errors: [{ msg: "user doesn't exists" }]});
+  }
 
-      const userAlreadyExists = group.users.filter(id => id.equals(user._id));
-      if (userAlreadyExists.length)
-        return res.json({errors: [{ msg: "user already in group" }]});
+  const group = await Group.findById(req.body.groupId).exec();
 
-      Event.findOne({receiver: user._id, associatedId: req.body.groupId}, (err, evnt) => {
-        if (evnt) return res.json({errors: [{ msg: "user already in invited" }]});
-        const event = new Event({
-          type: EventType.GroupInvite,
-          associatedId: req.body.groupId,
-          receiver: user._id,
-          sender: req.user._id,
-          possibleActions: [ActionType.Accept, ActionType.Decline]
-        });
+  const notGroupOwner = !req.user._id.equals(group.createdBy);
 
-        event.save((err, savedEvent: EventModel) => {
-          savedEvent.actionLink = createGroupInviteLink(group._id, savedEvent._id);
-          savedEvent.save(err => {
-            if (err) return next(err);
-            const notif = new Notification({
-              type: NotificationType.GroupInvite,
-              receiver: user._id,
-              isSeen: false
-            });
-            notif.save(err => {
-              return res.json({ msg: "success" });
-            });
-          });
-        });
-      });
-    });
+  if (notGroupOwner) {
+    return res.json({errors: [{ msg: "can't add, you are not the owner of this group" }]});
+  }
+
+  const userAlreadyExists = group.users.filter(id => id.equals(user._id));
+
+  if (userAlreadyExists.length) {
+    return res.json({errors: [{ msg: "user already in group" }]});
+  }
+
+  const evnt = await Event.findOne({receiver: user._id, associatedId: req.body.groupId}).exec();
+
+  if (evnt) return res.json({errors: [{ msg: "user already in invited" }]});
+
+  const event = new Event({
+    type: EventType.GroupInvite,
+    associatedId: req.body.groupId,
+    receiver: user._id,
+    sender: req.user._id,
+    possibleActions: [ActionType.Accept, ActionType.Decline]
   });
+
+  const newEvent = await event.save();
+
+  newEvent.actionLink = createGroupInviteLink(group._id, newEvent._id);
+
+  await newEvent.save();
+  res.json({ msg: "success" });
 }
 
 export function createGroupInviteLink(groupId: string, eventId: string) {

@@ -1,21 +1,23 @@
-import mongoose from "mongoose";
+import { Document, Schema, Model, model } from "mongoose";
 import { UserModel } from "./User";
 import { TaskModel } from "./Task";
 
-export type GroupModel = mongoose.Document & {
+export interface GroupModel extends Document {
   name: string;
-  createdBy: UserModel,
+  createdBy: UserModel;
   users: UserModel[];
-  tasks: TaskModel[]
-};
+  tasks: TaskModel[];
 
-const groupSchema = new mongoose.Schema({
+  findById: this;
+}
+
+const groupSchema = new Schema({
   name: String,
-  createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-  users: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
-  tasks: [{ type: mongoose.Schema.Types.ObjectId, ref: "Task" }],
+  createdBy: { type: Schema.Types.ObjectId, ref: "User" },
+  users: [{ type: Schema.Types.ObjectId, ref: "User" }],
+  tasks: [{ type: Schema.Types.ObjectId, ref: "Task" }],
 }, { timestamps: true });
 
-const Group = mongoose.model("Group", groupSchema);
+const Group = model<GroupModel>("Group", groupSchema);
 
 export default Group;
