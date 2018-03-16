@@ -1,9 +1,9 @@
 import { GroupModel } from "./Group";
-import mongoose from "mongoose";
+import { Document, Schema, Model, Error, model } from "mongoose";
 import bcrypt from "bcrypt-nodejs";
 import crypto from "crypto";
 
-export type UserModel = mongoose.Document & {
+export interface UserModel extends Document {
   email: string;
   password: string;
   groups: GroupModel[];
@@ -11,13 +11,13 @@ export type UserModel = mongoose.Document & {
   profile: {
     name: string;
   };
-};
+}
 
-const userSchema = new mongoose.Schema(
+const userSchema = new Schema(
   {
     email: { type: String, unique: true },
     password: String,
-    groups: [{ type: mongoose.Schema.Types.ObjectId, ref: "Group" }],
+    groups: [{ type: Schema.Types.ObjectId, ref: "Group" }],
 
     profile: {
       name: String,
@@ -35,7 +35,7 @@ userSchema.pre("save", function save(next) {
     if (err) {
       return next(err);
     }
-    bcrypt.hash(user.password, salt, undefined, (err: mongoose.Error, hash) => {
+    bcrypt.hash(user.password, salt, undefined, (err: Error, hash) => {
       if (err) {
         return next(err);
       }
@@ -52,12 +52,12 @@ userSchema.methods.comparePassword = function(
   bcrypt.compare(
     candidatePassword,
     this.password,
-    (err: mongoose.Error, isMatch: boolean) => {
+    (err: Error, isMatch: boolean) => {
       cb(err, isMatch);
     }
   );
 };
 
-const User = mongoose.model("User", userSchema);
+const User = model<UserModel>("User", userSchema);
 
 export default User;

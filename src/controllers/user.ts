@@ -101,49 +101,42 @@ export async function inviteToGroup(req: Request, res: Response, next: NextFunct
     possibleActions: [ActionType.Accept, ActionType.Decline]
   });
 
-  const newEvent = await event.save();
+  const eventToUpdate = await event.save();
 
-  newEvent.actionLink = createGroupInviteLink(group._id, newEvent._id);
+  eventToUpdate.actionLink = createGroupInviteLink(group._id, eventToUpdate._id);
 
-  await newEvent.save();
-  res.json({ msg: "success" });
+  await eventToUpdate.save();
+
+  return res.json({ msg: "success" });
 }
 
-export function createGroupInviteLink(groupId: string, eventId: string) {
+export async function acceptGroupInvite(req: Request, res: Response, next: NextFunction) {
+  const event = await Event.findById(req.params.eventId).exec();
+
+  if (!event) {
+    return res.json({errors: [{ msg: "you shouldn't be here" }]});
+  }
+
+  if (!event.receiver.equals(req.user._id)) {
+    return res.json({errors: [{ msg: "you shouldn't be here" }]});
+  }
+
+  const group = await Group.findById(req.params.groupId).exec();
+
+  group.users.push(req.user._id);
+
+  await group.save();
+
+  const user = await User.findById(req.user._id).exec();
+
+  user.groups.push(group._id);
+
+  await user.save();
+  await event.remove();
+
+  return res.json({ msg: "success" });
+}
+
+function createGroupInviteLink(groupId: string, eventId: string) {
   return "/account/" + groupId + "/" + eventId;
-}
-
-export function acceptGroupInvite(req: Request, res: Response, next: NextFunction) {
-  Event.findById(req.params.eventId, (err, event: EventModel) => {
-    if (!event)
-      return res.json({errors: [{ msg: "you shouldn't be here" }]});
-
-    if (!event.receiver.equals(req.user._id))
-      return res.json({errors: [{ msg: "you shouldn't be here" }]});
-
-    Group.findById(req.params.groupId, (err, group: GroupModel) => {
-      if (err) return next(err);
-
-      group.users.push(req.user._id);
-      group.save(err => {
-        if (err) return next(err);
-        User.findById(req.user._id, (err, userToUpdate: UserModel) => {
-          userToUpdate.groups.push(group._id);
-          userToUpdate.save(err => {
-            if (err) return next(err);
-            // TODO: create notif
-            // TODO: delte event
-            return res.json({ msg: "success" });
-          });
-        });
-      });
-    });
-  });
-}
-
-export function getNotifications(req: Request, res: Response, next: NextFunction) {
-  Notification.find({receiver: req.user._id}, (err, notifications) => {
-    if (err) return next(err);
-    return res.json(notifications);
-  });
 }

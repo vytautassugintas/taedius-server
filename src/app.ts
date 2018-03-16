@@ -85,7 +85,6 @@ app.post("/account/group", isAuthenticated, userController.createGroup);
 app.post("/account/group/invite", isAuthenticated, userController.inviteToGroup);
 app.post("/account/:groupId/:eventId/accept", isAuthenticated, userController.acceptGroupInvite);
 app.get("/account/group", isAuthenticated, userController.getGroups);
-app.get("/account/notifications", isAuthenticated, userController.getNotifications);
 app.get("/account/events", isAuthenticated, eventController.getCurrentUserEvents);
 app.delete("/group/:groupId", isAuthenticated, groupController.removeGroup);
 app.post("/group/task/add", isAuthenticated, groupController.addTask);
