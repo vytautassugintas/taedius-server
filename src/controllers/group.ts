@@ -4,6 +4,22 @@ import { default as User, UserModel } from "../models/User";
 import { default as Group, GroupModel } from "../models/Group";
 import { default as Task, TaskModel } from "../models/Task";
 
+export async function randomAssign(req: Request, res: Response, next: NextFunction) {
+  const group = await Group.findById(req.params.groupId).exec();
+  if (!group) return res.json({errors: [{msg: "group doesn't exists"}]});
+
+  const members = group.users;
+
+  await group.populate({path: "tasks"}).execPopulate();
+
+  group.tasks.forEach(async function(task) {
+      task.assignee = group.users[Math.floor(Math.random() * Math.floor(group.users.length))];
+      await task.save();
+  });
+
+  return res.json(group);
+}
+
 export function removeGroup(req: Request, res: Response, next: NextFunction) {
   Group.findByIdAndRemove(req.params.groupId, err => {
     if (err) next(err);

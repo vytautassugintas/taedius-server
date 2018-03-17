@@ -92,7 +92,7 @@ app.post("/group/task/remove", isAuthenticated, groupController.removeTask);
 app.post("/group/task/assign", isAuthenticated, groupController.assign);
 app.get("/group/:groupId/tasks", isAuthenticated, groupController.getTasks);
 app.get("/group/:groupId", isAuthenticated, groupController.getGroup);
-
+app.get("/group/:groupId/assign/random", isAuthenticated, groupController.randomAssign);
 app.listen(3000, () => console.log("Example app listening on port 3000!"));
 
 export default app;
