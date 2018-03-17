@@ -90,6 +90,7 @@ app.delete("/group/:groupId", isAuthenticated, groupController.removeGroup);
 app.post("/group/task/add", isAuthenticated, groupController.addTask);
 app.post("/group/task/remove", isAuthenticated, groupController.removeTask);
 app.post("/group/task/assign", isAuthenticated, groupController.assign);
+app.post("/group/task/request", isAuthenticated, groupController.askForApproval);
 app.get("/group/:groupId/tasks", isAuthenticated, groupController.getTasks);
 app.get("/group/:groupId", isAuthenticated, groupController.getGroup);
 app.get("/group/:groupId/assign/random", isAuthenticated, groupController.randomAssign);

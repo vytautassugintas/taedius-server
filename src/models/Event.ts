@@ -7,7 +7,8 @@ export enum ActionType {
 }
 
 export enum EventType {
-  GroupInvite = "GroupInvite"
+  GroupInvite = "GroupInvite",
+  TaskApproval = "TaskApproval"
 }
 
 export interface EventModel extends Document {
