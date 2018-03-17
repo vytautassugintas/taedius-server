@@ -72,8 +72,12 @@ export function removeTask(req: Request, res: Response, next: NextFunction) {
 }
 
 export function getGroup(req: Request, res: Response, next: NextFunction) {
-  Group.findById(req.params.groupId, (err, group: GroupModel) => {
-    return res.json(group);
+  Group.findById(req.params.groupId)
+    .populate({
+      path: "users"
+    })
+    .exec((err, group: GroupModel) => {
+      return res.json(group);
   });
 }
 
