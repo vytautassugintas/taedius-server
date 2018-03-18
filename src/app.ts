@@ -9,6 +9,8 @@ import bodyParser from "body-parser";
 import passport from "passport";
 import passportLocal from "passport-local";
 import request from "request";
+import { createServer, Server } from "http";
+import SocketIO from "socket.io";
 
 import { default as User } from "./models/User";
 import * as authController from "./controllers/auth";
@@ -16,7 +18,7 @@ import * as userController from "./controllers/user";
 import * as groupController from "./controllers/group";
 import * as eventController from "./controllers/event";
 
-const MONGO_URL = "mongodb://localhost/test";
+const MONGO_URL = "mongodb://localhost/taedius-test";
 
 const LocalStrategy = passportLocal.Strategy;
 const MongoStore = mongo(session);
@@ -94,6 +96,26 @@ app.post("/group/task/request", isAuthenticated, groupController.askForApproval)
 app.get("/group/:groupId/tasks", isAuthenticated, groupController.getTasks);
 app.get("/group/:groupId", isAuthenticated, groupController.getGroup);
 app.get("/group/:groupId/assign/random", isAuthenticated, groupController.randomAssign);
-app.listen(3000, () => console.log("Example app listening on port 3000!"));
+
+const server = createServer(app);
+const io = SocketIO(server);
+
+io.on("connection", function(socket) {
+  console.log("a user connected");
+});
+
+io.on("connect", (socket: any) => {
+  console.log("Connected client on port %s.", 3000);
+  socket.on("message", (m: any) => {
+      console.log("[server](message): %s", JSON.stringify(m));
+      io.emit("message", m);
+  }); 
+
+  socket.on("disconnect", () => {
+      console.log("Client disconnected");
+  });
+});
+
+server.listen(3000, () => console.log("Example app listening on port 3000!"));
 
 export default app;

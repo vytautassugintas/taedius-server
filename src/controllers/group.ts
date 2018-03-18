@@ -14,6 +14,7 @@ export async function randomAssign(req: Request, res: Response, next: NextFuncti
   await group.populate({path: "tasks"}).execPopulate();
 
   group.tasks.forEach(async function(task) {
+      task.status = TaskType.None;
       task.assignee = group.users[Math.floor(Math.random() * Math.floor(group.users.length))];
       await task.save();
   });
@@ -112,7 +113,10 @@ export async function askForApproval(req: Request, res: Response, next: NextFunc
   await taskToApprove.save();
   await group.populate({path: "users"}).execPopulate();
 
-  const approver = getApprover(req.user._id, group.users);
+  console.log("current user", req.user.email);
+
+  const approver = group.users.find(user => !user._id.equals(req.user._id));
+
   const event = new Event({
     type: EventType.TaskApproval,
     associatedId: req.body.taskId,
@@ -161,13 +165,4 @@ export function assign(req: Request, res: Response, next: NextFunction) {
 
 function getRandomInt(max: number): number {
   return Math.floor(Math.random() * Math.floor(max));
-}
-
-function getApprover(currentUserId: string, users: UserModel[]): UserModel {
-  const randomNum = getRandomInt(users.length);
-  if (users[randomNum] && users[randomNum]._id.equals(currentUserId)) {
-      return users.find(user => user._id !== currentUserId);
-  } else {
-    return users[randomNum];
-  }
 }
