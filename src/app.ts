@@ -23,20 +23,23 @@ const MONGO_URL = "mongodb://localhost/taedius-test";
 const LocalStrategy = passportLocal.Strategy;
 const MongoStore = mongo(session);
 const app = express();
+const server = createServer(app);
+const io = SocketIO(server);
+
+const sessionMiddleware = session({
+  resave: true,
+  saveUninitialized: true,
+  secret: "secret",
+  store: new MongoStore({
+    url: MONGO_URL,
+    autoReconnect: true
+  })
+});
 
 mongoose.connect(MONGO_URL);
 
 app.use(expressValidator());
-app.use(session({
-    resave: true,
-    saveUninitialized: true,
-    secret: "secret",
-    store: new MongoStore({
-      url: MONGO_URL,
-      autoReconnect: true
-    })
-  })
-);
+app.use(sessionMiddleware);
 app.use(cors({credentials: true, origin: true}));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -97,19 +100,20 @@ app.get("/group/:groupId/tasks", isAuthenticated, groupController.getTasks);
 app.get("/group/:groupId", isAuthenticated, groupController.getGroup);
 app.get("/group/:groupId/assign/random", isAuthenticated, groupController.randomAssign);
 
-const server = createServer(app);
-const io = SocketIO(server);
-
-io.on("connection", function(socket) {
-  console.log("a user connected");
+io.use((socket, next) => {
+  sessionMiddleware(socket.request, socket.request.res, next);
 });
 
-io.on("connect", (socket: any) => {
+io.on("connection", socket => {
+  console.log("a user connected, user ID is", socket.request.session.passport.user);
+});
+
+io.on("connect", socket => {
   console.log("Connected client on port %s.", 3000);
   socket.on("message", (m: any) => {
       console.log("[server](message): %s", JSON.stringify(m));
       io.emit("message", m);
-  }); 
+  });
 
   socket.on("disconnect", () => {
       console.log("Client disconnected");
