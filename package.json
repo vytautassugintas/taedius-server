@@ -3,8 +3,11 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "engines": {
+    "node": "8.9.1"
+  },
   "scripts": {
-    "start": "npm run serve",
+    "start": "npm run build && npm run serve",
     "build": "npm run build-ts",
     "serve": "node dist/server.js",
     "watch-node": "nodemon dist/server.js",

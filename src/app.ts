@@ -18,7 +18,9 @@ import * as userController from "./controllers/user";
 import * as groupController from "./controllers/group";
 import * as eventController from "./controllers/event";
 
-const MONGO_URL = "mongodb://localhost/taedius-test";
+const LOCAL_MONGO_URL = "mongodb://localhost/taedius-test";
+const MONGO_URL = process.env.MONGO_URL || LOCAL_MONGO_URL;
+const PORT = process.env.PORT || 3000;
 
 const LocalStrategy = passportLocal.Strategy;
 const MongoStore = mongo(session);
@@ -105,14 +107,17 @@ io.use((socket, next) => {
 });
 
 io.on("connection", socket => {
-  console.log("a user connected, user ID is", socket.request.session.passport.user);
+  if (socket.request.session && socket.request.session.passport) {
+    console.log("a user connected, user ID is", socket.request.session.passport.user);
+  }
 });
 
 io.on("connect", socket => {
-  console.log("Connected client on port %s.", 3000);
-  socket.on("message", (m: any) => {
+  console.log("Connected client on port %s.", PORT);
+
+  socket.on("event", (m: any) => {
       console.log("[server](message): %s", JSON.stringify(m));
-      io.emit("message", m);
+      io.emit("event", m);
   });
 
   socket.on("disconnect", () => {
@@ -120,6 +125,6 @@ io.on("connect", socket => {
   });
 });
 
-server.listen(3000, () => console.log("Example app listening on port 3000!"));
+server.listen(PORT, () => console.log("Example app listening on port " + PORT + "::::" + MONGO_URL));
 
 export default app;
